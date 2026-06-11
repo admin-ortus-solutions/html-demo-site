@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNI Deira Dubai — WhatsApp Chatbot Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0ebe3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .page-header .bni-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .page-header .logo-mark {
+    width: 42px;
+    height: 42px;
+    background: #C0392B;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: -0.5px;
+  }
+
+  .page-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .page-header p {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  .phone-wrap {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  }
+
+  .phone-header {
+    background: #075E54;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .phone-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #25D366;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .phone-info { flex: 1; }
+  .phone-name { color: white; font-size: 15px; font-weight: 500; }
+  .phone-status { color: #B2DFDB; font-size: 12px; margin-top: 1px; }
+
+  .chat-area {
+    background: #ECE5DD;
+    height: 480px;
+    overflow-y: auto;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 2px; }
+
+  .msg { max-width: 82%; word-wrap: break-word; }
+  .msg.bot { align-self: flex-start; }
+  .msg.user { align-self: flex-end; }
+
+  .msg-bubble {
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
+  .msg.bot .msg-bubble {
+    background: white;
+    border-radius: 0px 8px 8px 8px;
+    color: #1a1a1a;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .msg.user .msg-bubble {
+    background: #DCF8C6;
+    border-radius: 8px 0px 8px 8px;
+    color: #1a1a1a;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .msg-time {
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+
+  .msg.bot .msg-time { text-align: left; }
+  .msg.user .msg-time { text-align: right; }
+
+  .typing-msg { align-self: flex-start; }
+  .typing {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 0px 8px 8px 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #aaa;
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  .quick-replies {
+    background: #f7f7f7;
+    padding: 8px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-top: 1px solid #e0e0e0;
+    min-height: 44px;
+  }
+
+  .qr {
+    background: white;
+    border: 1.5px solid #25D366;
+    color: #075E54;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .qr:hover { background: #E8F5E9; border-color: #075E54; }
+  .qr:active { transform: scale(0.97); }
+
+  .input-area {
+    background: #f0f0f0;
+    padding: 8px 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .input-area input {
+    flex: 1;
+    background: white;
+    border: none;
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    color: #1a1a1a;
+  }
+
+  .input-area input::placeholder { color: #aaa; }
+
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #075E54;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .send-btn:hover { background: #064E3B; }
+  .send-btn:active { transform: scale(0.96); }
+
+  .send-btn svg { width: 20px; height: 20px; fill: white; }
+
+  .phone-footer {
+    padding: 10px 16px;
+    text-align: center;
+    background: white;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .reset-btn {
+    background: none;
+    border: none;
+    color: #C0392B;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .reset-btn:hover { background: #FDECEA; }
+
+  .footer-note {
+    font-size: 11px;
+    color: #bbb;
+  }
+
+  .page-footer {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  .page-footer a { color: #C0392B; text-decoration: none; }
+
+  .date-chip {
+    text-align: center;
+    margin: 4px 0;
+  }
+
+  .date-chip span {
+    background: rgba(0,0,0,0.08);
+    color: #666;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 460px) {
+    body { padding: 0; justify-content: flex-start; background: #ECE5DD; }
+    .page-header { display: none; }
+    .phone-wrap { border-radius: 0; box-shadow: none; max-width: 100%; }
+    .chat-area { height: calc(100vh - 230px); }
+    .page-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="bni-logo">
+    <div class="logo-mark">BNI</div>
+    <h1>Deira Dubai</h1>
+  </div>
+  <p>AI Lead Assistant — Powered by Yess.ae &nbsp;·&nbsp; Test the chatbot below</p>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone-header">
+    <div class="phone-avatar">BNI</div>
+    <div class="phone-info">
+      <div class="phone-name">BNI Deira Dubai</div>
+      <div class="phone-status">online</div>
+    </div>
+  </div>
+
+  <div class="chat-area" id="chat">
+    <div class="date-chip"><span>Today</span></div>
+  </div>
+
+  <div class="quick-replies" id="qr-area"></div>
+
+  <div class="input-area">
+    <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+    <button class="send-btn" onclick="sendMsg()" aria-label="Send">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <div class="phone-footer">
+    <button class="reset-btn" onclick="resetChat()">↺ Start over</button>
+    <span class="footer-note">Demo only — not connected to live BNI system</span>
+  </div>
+</div>
+
+<div class="page-footer">
+  BNI Deira Dubai &nbsp;·&nbsp; Givers Gain® &nbsp;·&nbsp;
+  <a href="https://www.bni.com" target="_blank">www.bni.com</a>
+  &nbsp;·&nbsp; Executive Director: Pankaj Gupta · 050 261 2483
+</div>
+
+<script>
+const CHAPTERS = {
+  morning: [
+    { name: "BNI Synergy", day: "Tuesday", time: "6:45 AM", venue: "Radisson Blu, Deira Creek", hybrid: false },
+    { name: "BNI United", day: "Tuesday", time: "6:45 AM", venue: "Marriott Marquis, Jewel of the Creek", hybrid: true },
+    { name: "BNI Legends", day: "Wednesday", time: "6:45 AM", venue: "Khalidiya Palace Hotel", hybrid: false },
+    { name: "BNI Continental", day: "Thursday", time: "6:45 AM", venue: "Radisson Blu, Deira Creek", hybrid: false },
+    { name: "BNI Excelerate", day: "Friday", time: "6:45 AM", venue: "Marriott Marquis, Jewel of the Creek", hybrid: false },
+    { name: "BNI Gladiators", day: "Friday", time: "6:45 AM", venue: "Radisson Blu, Deira Creek", hybrid: false },
+  ],
+  afternoon: [
+    { name: "BNI Givers", day: "Wednesday", time: "3:45 PM", venue: "Khalidiya Palace Hotel", hybrid: true },
+    { name: "BNI Elevate", day: "Thursday", time: "3:45 PM", venue: "Khalidiya Palace Hotel", hybrid: false },
+    { name: "BNI Energy", day: "Friday", time: "3:45 PM", venue: "Khalidiya Palace Hotel", hybrid: true },
+  ],
+  evening: [
+    { name: "BNI Harmony", day: "Tuesday", time: "6:15 PM", venue: "Khalidiya Palace Hotel", hybrid: false },
+  ]
+};
+
+const CATEGORY_CLARIFY = {
+  "accountant": { q: "Do you focus on bookkeeping, taxation, or audit & assurance?", opts: ["Bookkeeping", "Taxation", "Audit & Assurance"] },
+  "accounting": { q: "Do you focus on bookkeeping, taxation, or audit & assurance?", opts: ["Bookkeeping", "Taxation", "Audit & Assurance"] },
+  "finance": { q: "Is it bookkeeping, taxation, financial planning, wealth management, or business financing?", opts: ["Bookkeeping", "Taxation", "Financial Planning", "Wealth Management", "Business Financing"] },
+  "lawyer": { q: "Is your practice commercial/business law, litigation, or wills & trusts?", opts: ["Commercial / Business Law", "Litigation", "Wills & Trusts"] },
+  "legal": { q: "Is your practice commercial/business law, litigation, or wills & trusts?", opts: ["Commercial / Business Law", "Litigation", "Wills & Trusts"] },
+  "real estate": { q: "Do you deal in residential, commercial, or holiday homes?", opts: ["Residential", "Commercial", "Holiday Homes"] },
+  "property": { q: "Do you deal in residential, commercial, or holiday homes?", opts: ["Residential", "Commercial", "Holiday Homes"] },
+  "broker": { q: "Do you deal in residential, commercial, or holiday homes?", opts: ["Residential", "Commercial", "Holiday Homes"] },
+  "company": { q: "Do you handle onshore/freezone or offshore incorporations?", opts: ["Onshore / Freezone", "Offshore"] },
+  "business setup": { q: "Do you handle onshore/freezone or offshore incorporations?", opts: ["Onshore / Freezone", "Offshore"] },
+  "incorporation": { q: "Do you handle onshore/freezone or offshore incorporations?", opts: ["Onshore / Freezone", "Offshore"] },
+  "marketing": { q: "Do you specialise in social media, web design, SEO, or branding?", opts: ["Social Media", "Web Design", "SEO", "Brand Consultancy"] },
+  "digital": { q: "Do you specialise in social media, web design, SEO, or branding?", opts: ["Social Media", "Web Design", "SEO", "Brand Consultancy"] },
+  "insurance": { q: "Is it life/personal insurance or general/employee benefits?", opts: ["Life / Personal Insurance", "General / Employee Benefits"] },
+  "it ": { q: "Is it computer networks, CRM/ERP, IT consulting, or app development?", opts: ["Computer Networks", "CRM / ERP", "IT Consulting", "App Development"] },
+  "technology": { q: "Is it computer networks, CRM/ERP, IT consulting, or app development?", opts: ["Computer Networks", "CRM / ERP", "IT Consulting", "App Development"] },
+  "software": { q: "Is it computer networks, CRM/ERP, IT consulting, or app development?", opts: ["Computer Networks", "CRM / ERP", "IT Consulting", "App Development"] },
+  "logistics": { q: "Is it freight forwarding, third party logistics, or shipping & port?", opts: ["Freight Forwarding", "Third Party Logistics", "Shipping & Port"] },
+  "shipping": { q: "Is it freight forwarding, third party logistics, or shipping & port?", opts: ["Freight Forwarding", "Third Party Logistics", "Shipping & Port"] },
+  "freight": { q: "Is it freight forwarding, third party logistics, or shipping & port?", opts: ["Freight Forwarding", "Third Party Logistics", "Shipping & Port"] },
+  "travel": { q: "Is it inbound or outbound travel?", opts: ["Inbound Travel", "Outbound Travel"] },
+  "coach": { q: "Is it business coaching, lifestyle coaching, or NLP training?", opts: ["Business Coaching", "Lifestyle Coaching", "NLP Training"] },
+  "training": { q: "Is it business coaching, lifestyle coaching, or NLP training?", opts: ["Business Coaching", "Lifestyle Coaching", "NLP Training"] },
+  "interior": { q: "Is it residential interior design or commercial/retail fitout?", opts: ["Residential Interior Design", "Commercial / Retail Fitout"] },
+  "construction": { q: "What is your specialisation — general contractor, MEP, flooring, or HVAC?", opts: ["General Contractor", "MEP", "Flooring", "HVAC"] },
+  "printing": { q: "Is it large format or offset printing?", opts: ["Large Format", "Offset Printing"] },
+  "security": { q: "Is it CCTV or fire protection?", opts: ["CCTV", "Fire Protection"] },
+  "hr": { q: "Is it HR consultancy, executive recruitment, or staff outsourcing?", opts: ["HR Consultancy", "Executive Recruitment", "Staff Outsourcing"] },
+  "human resources": { q: "Is it HR consultancy, executive recruitment, or staff outsourcing?", opts: ["HR Consultancy", "Executive Recruitment", "Staff Outsourcing"] },
+  "medical": { q: "Is it general practice, dental, or wellness services?", opts: ["General Practice", "Dental", "Wellness Services"] },
+  "doctor": { q: "Is it general practice, dental, or wellness services?", opts: ["General Practice", "Dental", "Wellness Services"] },
+  "healthcare": { q: "Is it general practice, dental, or wellness services?", opts: ["General Practice", "Dental", "Wellness Services"] },
+  "photographer": { q: "Is it photography, videography, or another creative service?", opts: ["Photography", "Videography", "Other Creative"] },
+  "artist": { q: "What is your creative specialisation?", opts: ["Photography", "Videography", "Other Creative"] },
+  "creative": { q: "What is your creative specialisation?", opts: ["Photography", "Videography", "Other Creative"] },
+  "events": { q: "Is it corporate events, event planning, or exhibitions?", opts: ["Corporate Events", "Event Planning", "Exhibitions"] },
+  "consulting": { q: "What type of consulting — business process, management, or quality management?", opts: ["Business Process Consulting", "Management Consulting", "Quality Management"] },
+};
+
+const FULL_CATEGORIES = [
+  "residential", "bookkeeping", "taxation", "audit", "financial planning", "general insurance",
+  "life insurance", "social media", "web design", "freight forwarding", "inbound travel",
+  "computer networks", "residential interior", "commercial fitout", "onshore", "freezone"
+];
+
+let state = { stage: "start", name: "", business: "", subCat: "", timeSlot: "", chosenChapter: null };
+
+function getTime() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function addMsg(text, type) {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  div.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g, "<br>")}</div><div class="msg-time">${getTime()}</div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping() {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "typing-msg";
+  div.id = "typing-indicator";
+  div.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById("typing-indicator");
+  if (t) t.remove();
+}
+
+function setQR(opts) {
+  const area = document.getElementById("qr-area");
+  area.innerHTML = "";
+  opts.forEach(o => {
+    const btn = document.createElement("button");
+    btn.className = "qr";
+    btn.textContent = o;
+    btn.onclick = () => handleInput(o);
+    area.appendChild(btn);
+  });
+}
+
+function clearQR() { document.getElementById("qr-area").innerHTML = ""; }
+
+function botReply(text, qrs, delay) {
+  clearQR();
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMsg(text, "bot");
+    if (qrs && qrs.length) setQR(qrs);
+  }, delay || 900);
+}
+
+function detectCategory(text) {
+  const lower = text.toLowerCase();
+  for (const [key, val] of Object.entries(CATEGORY_CLARIFY)) {
+    if (lower.includes(key.trim())) return { key, ...val };
+  }
+  return null;
+}
+
+function isFull(cat) {
+  const lower = cat.toLowerCase();
+  return FULL_CATEGORIES.some(f => lower.includes(f));
+}
+
+function handleInput(text) {
+  if (!text.trim()) return;
+  document.getElementById("user-input").value = "";
+  clearQR();
+  addMsg(text, "user");
+  const lower = text.toLowerCase();
+
+  const greetings = ["hi","hello","hey","more info","tell me more","i saw","interested","what is this","info","know more","bni"];
+  if (state.stage === "start" || greetings.some(k => lower.startsWith(k) || lower === k)) {
+    state.stage = "getName";
+    botReply("Hello! 👋 Welcome to BNI Deira Dubai.\n\nBNI is a professional referral network where business owners grow their revenue by passing business to each other every week — through trusted relationships, not cold calls or ads.\n\nMay I know your name and what kind of business you're in? 😊", [], 900);
+    return;
+  }
+
+  if (state.stage === "getName") {
+    const parts = text.trim().split(/\s+/);
+    state.name = parts[0];
+    const rest = parts.slice(1).join(" ");
+    if (rest.length > 2) {
+      state.business = rest;
+      processBusinessInput(rest);
+    } else {
+      state.stage = "getBusiness";
+      botReply(`Nice to meet you, ${state.name}! 😊\n\nWhat kind of business are you in?`, [], 800);
+    }
+    return;
+  }
+
+  if (state.stage === "getBusiness") {
+    state.business = text;
+    processBusinessInput(text);
+    return;
+  }
+
+  if (state.stage === "clarifyCategory") {
+    state.subCat = text;
+    checkAvailabilityAndProceed(text);
+    return;
+  }
+
+  if (state.stage === "metBefore") {
+    if (lower.includes("yes") || lower.includes("before") || lower.includes("have") || lower.includes("attended")) {
+      state.stage = "explain";
+      botReply(`Great — so you've already seen how it works! 😊\n\nWould you like to explore joining a chapter, or do you have questions first?`, ["Explore joining", "I have questions", "What are the fees?"], 800);
+    } else {
+      explainBNI();
+    }
+    return;
+  }
+
+  if (state.stage === "timeSlot") {
+    if (lower.includes("morning") || lower.includes("6:45")) {
+      state.timeSlot = "morning";
+      showChapters("morning");
+    } else if (lower.includes("afternoon") || lower.includes("3:45")) {
+      state.timeSlot = "afternoon";
+      showChapters("afternoon");
+    } else if (lower.includes("evening") || lower.includes("6:15")) {
+      state.timeSlot = "evening";
+      showChapters("evening");
+    } else {
+      botReply("What time works best for you?\n🌅 Early Morning — 6:45 AM\n☀️ Afternoon — 3:45 PM\n🌆 Evening — 6:15 PM", ["Early Morning — 6:45 AM", "Afternoon — 3:45 PM", "Evening — 6:15 PM"], 700);
+    }
+    return;
+  }
+
+  if (state.stage === "chooseChapter") {
+    const chapters = CHAPTERS[state.timeSlot];
+    const chosen = chapters.find(c =>
+      lower.includes(c.day.toLowerCase()) ||
+      lower.includes(c.name.toLowerCase().replace("bni ", ""))
+    );
+    if (chosen) {
+      state.chosenChapter = chosen;
+      confirmChapter(chosen);
+    } else {
+      botReply("Which day works best for you? 😊", chapters.map(c => `${c.day} — ${c.name}`), 700);
+    }
+    return;
+  }
+
+  if (state.stage === "hybridChoice") {
+    if (lower.includes("person") || lower.includes("135") || lower.includes("in-person")) {
+      state.stage = "collecting";
+      botReply(`Perfect — in-person it is! 🎉\n\nPlease share your details to complete registration:\n\n📋 Full Name:\n📧 Email ID:\n📱 Mobile:\n🏢 Company Name:\n💼 Field of Business:\n\nVenue fee AED 135 — paid at the hotel on the day. 😊`, [], 900);
+    } else {
+      state.stage = "collecting";
+      botReply(`Great — Zoom session, no fee! 😊\n\nPlease share your details:\n\n📋 Full Name:\n📧 Email ID:\n📱 Mobile:\n🏢 Company Name:\n💼 Field of Business:`, [], 900);
+    }
+    return;
+  }
+
+  if (state.stage === "collecting") {
+    state.stage = "done";
+    botReply(`✅ You're registered, ${state.name}! A confirmation will be sent to you shortly.\n\n📍 Self-parking available at the hotel basement\n📇 Bring at least 30 business cards\n📍 Location: https://maps.app.goo.gl/wu2yYBhkJ4mJHXm37\n\nLooking forward to welcoming you! 😊`, ["Ask another question"], 1000);
+    return;
+  }
+
+  handleFAQ(lower, text);
+}
+
+function processBusinessInput(text) {
+  const cat = detectCategory(text);
+  if (cat) {
+    state.stage = "clarifyCategory";
+    botReply(`Nice to meet you, ${state.name}! 😊\n\n${cat.q}`, cat.opts, 900);
+  } else {
+    state.stage = "metBefore";
+    botReply(`Nice to meet you, ${state.name}! 😊\n\nHave you ever attended a BNI meeting before, or would this be your first time?`, ["First time", "I've attended before"], 900);
+  }
+}
+
+function checkAvailabilityAndProceed(cat) {
+  const full = isFull(cat);
+  if (full) {
+    botReply(`${state.name}, the ${cat} category is currently filled across all our chapters. 😔\n\nDo you also offer any related services? There may be an open seat nearby!\n\nOr you're very welcome to visit as a guest up to 2 times — many people do this to experience the network and be first in line when a seat opens. 😊`, ["Visit as guest anyway", "Check a related category"], 1000);
+    state.stage = "explain";
+  } else if (cat.toLowerCase().includes("other creative") || cat.toLowerCase().includes("unlisted") || cat.toLowerCase().includes("other")) {
+    botReply(`Great news, ${state.name}! 🎉 Your category doesn't exist in BNI yet — which means no competition!\n\nSimply visit a chapter and the leadership team will personally create the right category for your business.\n\nWhat time works best for you?\n🌅 Early Morning — 6:45 AM\n☀️ Afternoon — 3:45 PM\n🌆 Evening — 6:15 PM`, ["Early Morning — 6:45 AM", "Afternoon — 3:45 PM", "Evening — 6:15 PM"], 1000);
+    state.stage = "timeSlot";
+  } else {
+    botReply(`Great news, ${state.name}! The ${cat} category has open seats in our chapters. 🎉\n\nWhat time works best for you?\n🌅 Early Morning — 6:45 AM\n☀️ Afternoon — 3:45 PM\n🌆 Evening — 6:15 PM`, ["Early Morning — 6:45 AM", "Afternoon — 3:45 PM", "Evening — 6:15 PM"], 1000);
+    state.stage = "timeSlot";
+  }
+}
+
+function explainBNI() {
+  state.stage = "explain";
+  botReply(`BNI is built on one idea — your fellow members become your extended sales team. 🙌\n\nEvery week, the same group of professionals meets, builds trust, and actively refers clients to each other. Only one business per category per chapter — so every referral for your field comes exclusively to you.\n\nIn May 2026, BNI UAE members passed 6,845 referrals generating AED 47 Million! 💰\n\nWould you like to visit a meeting as a guest? Just AED 135 for the venue and meal. 😊`, ["Yes, I'd like to visit!", "What are the fees?", "Tell me more"], 1000);
+}
+
+function showChapters(slot) {
+  state.stage = "chooseChapter";
+  const chapters = CHAPTERS[slot];
+  let msg = `We have ${slot} chapters:\n\n`;
+  chapters.forEach(c => {
+    msg += `📅 ${c.day} — ${c.name}\n    ${c.venue}${c.hybrid ? " *(Hybrid)" : ""}\n\n`;
+  });
+  msg += `Which day works best for you? 😊`;
+  botReply(msg, chapters.map(c => `${c.day} — ${c.name}`), 900);
+}
+
+function confirmChapter(chapter) {
+  if (chapter.hybrid) {
+    state.stage = "hybridChoice";
+    const now = new Date();
+    const isFirstWeek = now.getDate() <= 7;
+    const meetingType = isFirstWeek ? "in-person at " + chapter.venue + " (AED 135)" : "on Zoom (free)";
+    botReply(`${chapter.name} is a Hybrid chapter. 😊\n\n📅 First meeting of the month → In-person at ${chapter.venue} (AED 135)\n💻 All other weeks → Zoom (no fee)\n\nThe next meeting would be ${meetingType}.\n\nWhich would you prefer?`, ["In-person (AED 135)", "Zoom — Free"], 1000);
+  } else {
+    state.stage = "collecting";
+    botReply(`${chapter.name} — ${chapter.day} at ${chapter.time}\n📍 ${chapter.venue}\n\nPlease share your details to register:\n\n📋 Full Name:\n📧 Email ID:\n📱 Mobile:\n🏢 Company Name:\n💼 Field of Business:\n\nVenue fee AED 135 — paid at the hotel on the day. 😊`, [], 1000);
+  }
+}
+
+function handleFAQ(lower, original) {
+  if (lower.includes("fee") || lower.includes("cost") || lower.includes("how much") || lower.includes("price") || lower.includes("membership")) {
+    botReply(`Visiting as a guest is just AED 135 — venue and meal, no commitment. 😊\n\nMembership:\n• 1 Year: AED 8,100\n• 2 Years: AED 11,300\n\nMost members recover this through just one good referral! Would you like to visit first?`, ["Yes, I'd like to visit!", "Tell me more about BNI"], 800);
+  } else if ((lower.includes("how many") || lower.includes("number")) && lower.includes("referral")) {
+    botReply(`In May 2026, BNI UAE members passed 6,845 referrals generating AED 47 Million in closed business! 💰\n\nIn the last 12 months: 92,660 referrals → AED 863 Million.`, ["I'd like to visit!", "What are the fees?"], 800);
+  } else if (lower.includes("mlm") || lower.includes("pyramid") || lower.includes("scheme") || lower.includes("catch")) {
+    botReply(`Not at all! No products, no commissions, no tiers. 😊\n\nBNI is a professional referral organisation operating 40+ years with 330,000+ members globally.\n\nBest proof is experiencing it — visit as a guest!`, ["Yes, I'd like to visit!", "Tell me more"], 800);
+  } else if (lower.includes("busy") || lower.includes("every week") || lower.includes("time commitment")) {
+    botReply(`The meeting is just 90 minutes — most members say it's their most productive 90 minutes of the week! 😊\n\nIf you can't make it one week, you can send a substitute colleague. Members get up to 3 absences in 6 months.`, ["I'd like to visit anyway", "What are the fees?"], 800);
+  } else if ((lower.includes("only") && lower.includes("member")) || lower.includes("25 member") || lower.includes("small group")) {
+    botReply(`Each member has their own network of hundreds of clients! When they refer you, they open doors to their entire network.\n\nIt's not 25 people — it's 25 networks! 🚀`, ["I'd like to visit!", "Tell me more"], 800);
+  } else if (lower.includes("social media") || lower.includes("already get") || lower.includes("other network")) {
+    botReply(`Social media creates visibility. BNI creates trust — and trust converts at a far higher rate. 😊\n\nMany members use both together very effectively!`, ["I'd like to visit!", "What are the fees?"], 800);
+  } else if (lower.includes("trade license") || lower.includes("document") || lower.includes("requirement")) {
+    botReply(`To visit as a guest — no documents needed at all! 😊\n\nTo join as a member — you'll need:\n• UAE Trade License (business owners)\n• Company license + NOC (employees)\n\nShall I register you for a guest visit first?`, ["Yes, register me!", "Tell me more"], 800);
+  } else if (lower.includes("how long") || lower.includes("meeting like") || lower.includes("what happen") || lower.includes("agenda")) {
+    botReply(`A BNI meeting runs about 90 minutes:\n\n🔹 Pre-networking (15 mins) — casual conversations\n🔹 Core meeting (90 mins) — 60-second member intros, one in-depth presentation, referrals passed\n🔹 Post-meeting — networking over breakfast/dinner\n\nChapters have 25–50 members. Bring 30+ business cards! 😊`, ["I'd like to visit!", "What are the fees?"], 800);
+  } else if (lower.includes("visit") || lower.includes("register") || lower.includes("attend") || lower.includes("yes") || lower.includes("explore") || lower.includes("join")) {
+    state.stage = "timeSlot";
+    botReply(`Wonderful! 🎉\n\nWhat time works best for you?\n🌅 Early Morning — 6:45 AM\n☀️ Afternoon — 3:45 PM\n🌆 Evening — 6:15 PM`, ["Early Morning — 6:45 AM", "Afternoon — 3:45 PM", "Evening — 6:15 PM"], 800);
+  } else if (lower.includes("more") || lower.includes("how") || lower.includes("what") || lower.includes("work") || lower.includes("explain")) {
+    explainBNI();
+  } else {
+    botReply(`Thanks for your message! 😊\n\nI can help you with:\n• How BNI works\n• Membership fees\n• Available chapters & schedules\n• Registering for a guest visit`, ["How does BNI work?", "What are the fees?", "I'd like to visit!"], 800);
+  }
+}
+
+function sendMsg() {
+  const input = document.getElementById("user-input");
+  if (input.value.trim()) handleInput(input.value.trim());
+}
+
+function resetChat() {
+  state = { stage: "start", name: "", business: "", subCat: "", timeSlot: "", chosenChapter: null };
+  const chat = document.getElementById("chat");
+  chat.innerHTML = '<div class="date-chip"><span>Today</span></div>';
+  clearQR();
+  setTimeout(() => {
+    botReply("Hello! 👋 Welcome to BNI Deira Dubai.\n\nBNI is a professional referral network where business owners grow their revenue by passing business to each other every week — through trusted relationships, not cold calls or ads.\n\nMay I know your name and what kind of business you're in? 😊", [], 600);
+    state.stage = "getName";
+  }, 200);
+}
+
+document.getElementById("user-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") sendMsg();
+});
+
+resetChat();
+</script>
+</body>
+</html>
